@@ -1,0 +1,6 @@
+﻿PawLink
+
+PawLink is a desktop app created for convenience.
+It uses the mihomo core, and almost everything works automatically.
+
+Click I Agree to continue.

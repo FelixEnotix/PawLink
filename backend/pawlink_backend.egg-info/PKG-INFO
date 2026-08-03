@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: pawlink-backend
+Version: 0.1.0
+Summary: PawLink local network routing agent — backend orchestration layer
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.32.0
+Requires-Dist: pydantic>=2.10.0
+Requires-Dist: pyyaml>=6.0.2
+Requires-Dist: httpx>=0.28.0
+Requires-Dist: aiofiles>=24.1.0
+Requires-Dist: psutil>=6.1.0
+Requires-Dist: pywin32>=308; sys_platform == "win32"

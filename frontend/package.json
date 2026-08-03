@@ -1,0 +1,124 @@
+{
+  "name": "pawlink",
+  "version": "1.1.8",
+  "description": "PawLink — local network routing agent for Windows",
+  "main": "dist-electron/main.js",
+  "author": "FelixEnotix",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FelixEnotix/PawLink.git"
+  },
+  "homepage": "https://github.com/FelixEnotix/PawLink",
+  "bugs": {
+    "url": "https://github.com/FelixEnotix/PawLink/issues"
+  },
+  "scripts": {
+    "dev": "concurrently -n vite,electron -c cyan,magenta \"npm:dev:vite\" \"npm:dev:electron\"",
+    "dev:vite": "vite --clearScreen false",
+    "dev:electron": "npm run build:electron && wait-on -t 30000 http://127.0.0.1:5173 && cross-env ELECTRON_DISABLE_SECURITY_WARNINGS=1 VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "icons": "node scripts/generate-icons.mjs",
+    "build:electron": "tsc -p electron/tsconfig.json && node scripts/copy-electron-assets.mjs",
+    "build": "tsc -b && vite build && npm run build:electron",
+    "preview": "vite preview",
+    "dist": "npm run icons && npm run build && electron-builder --win nsis --publish never"
+  },
+  "build": {
+    "appId": "com.pawlink.app",
+    "productName": "PawLink",
+    "copyright": "Copyright © PawLink",
+    "artifactName": "PawLink-Setup-${version}.${ext}",
+    "afterPack": "./scripts/after-pack.cjs",
+    "generateUpdatesFilesForAllChannels": false,
+    "directories": {
+      "output": "../build-tmp",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "assets/icon.png",
+      "assets/tray-icon.png",
+      "assets/tray-icon-off.png",
+      "assets/tray-icon-connecting.png",
+      "assets/tray-icon-connected.png",
+      "assets/icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "pawlink/**/*",
+          "!pawlink/**/__pycache__{,/**}",
+          "!pawlink/**/*.pyc",
+          "!pawlink/**/*.pyo",
+          "!pawlink/**/*.egg-info{,/**}",
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      },
+      {
+        "from": "../scripts/kill-other-instances.vbs",
+        "to": "scripts/kill-other-instances.vbs"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "packElevateHelper": false,
+      "guid": "8F4E2A1B-3C5D-4E6F-9A0B-1C2D3E4F5A6B",
+      "include": "build/installer.nsh",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PawLink",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "license": "build/license_ru.txt",
+      "installerLanguages": [
+        "ru_RU",
+        "en_US"
+      ],
+      "language": "1049",
+      "multiLanguageInstaller": true,
+      "displayLanguageSelector": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "menuCategory": false,
+      "warningsAsErrors": false,
+      "differentialPackage": false
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^2.1.8",
+    "rcedit": "^5.0.2",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "wait-on": "^8.0.1"
+  }
+}

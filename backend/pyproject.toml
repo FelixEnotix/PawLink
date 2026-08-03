@@ -1,0 +1,34 @@
+[project]
+name = "pawlink-backend"
+version = "1.0.0"
+description = "PawLink local network routing agent — backend orchestration layer"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pyyaml>=6.0.2",
+    "httpx>=0.28.0",
+    "aiofiles>=24.1.0",
+    "psutil>=6.1.0",
+    "pywin32>=308; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+pawlink-backend = "pawlink.main:main"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pawlink*"]
+
+[tool.setuptools.package-data]
+pawlink = ["assets/rule-lists/*"]

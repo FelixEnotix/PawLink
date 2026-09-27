@@ -1,0 +1,91 @@
+# ===== Gradle =====
+.gradle/
+.kotlin/
+build/
+local.properties
+/release-audit
+.env
+.env.*
+!.env.example
+
+# ===== Android =====
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.idsig
+app/build/
+app/release/
+captures/
+screenshots/
+*.hprof
+hs_err_pid*
+*.trace
+*.prof
+*.pcap
+*.pcapng
+
+# ===== Native Libraries (compiled) =====
+*.so
+*.dll
+*.dylib
+jniLibs/
+app/src/main/jniLibs/
+
+# ===== Server binary =====
+app/src/main/assets/server
+server
+
+# ===== Keystore / Secrets =====
+*.keystore
+*.jks
+*.key
+*.pem
+*.p12
+*.pfx
+*.mobileprovision
+*.db
+*.sqlite
+*.sqlite3
+*.kdbx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+known_hosts
+known_hosts.*
+google-services.json
+service-account*.json
+firebase-service-account*.json
+credentials*.json
+secrets*.json
+.codex-local
+.codex-local/
+AGENTS.md
+docs/*.md
+docs/**/*.md
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===== Misc =====
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+msg.txt
+*.bat
+cmd/wdtt-load
+cmd/wdtt-load/

@@ -1,0 +1,28 @@
+PawLink
+Copyright (c) 2026 FelixEnotix. All rights reserved.
+
+The PawLink applications for Windows and Android (the installers published on the
+Releases page) are free to download and use. Except as stated below, copying,
+modifying, decompiling, rebranding or redistributing the applications or any part
+of them requires written permission of the author.
+
+Third-party components
+----------------------
+PawLink includes open-source components that remain under their own licenses.
+Nothing above limits the rights these licenses give you for those components.
+
+- mihomo (MetaCubeX)            GPL-3.0      source with PawLink changes: source/mihomo
+- sing-tun (SagerNet)           GPL-3.0      source with PawLink changes: source/sing-tun
+- gVisor (Google)               Apache-2.0   source: source/gvisor
+- WDTT-Plus (Ivan4537)          GPL-3.0      source with PawLink changes: source/wdtt-plus,
+                                             source/wdtt-android-client, source/wdtt-android-server
+- PawLink Android core bridge   GPL-3.0      source/android-core (the part of libpawcore.so
+                                             that is linked with mihomo)
+- Twemoji Country Flags         CC-BY 4.0    flag font of the Windows application
+
+The full license texts are in the corresponding folders under source/.
+The GPL-3.0 text is available at https://www.gnu.org/licenses/gpl-3.0.txt
+
+Earlier versions of this repository published part of the Windows client under the
+MIT license. That permission stays valid for exactly those earlier published files;
+it does not extend to later versions.

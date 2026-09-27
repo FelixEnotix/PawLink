@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>PawLink — download</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: #0f1115; color: #e8eaed; }
+  main { max-width: 420px; padding: 24px; text-align: center; }
+  img { width: 72px; height: 72px; }
+  a { color: #7cb7ff; }
+  .muted { color: #9aa0a6; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <img src="https://raw.githubusercontent.com/FelixEnotix/PawLink/main/assets/icon.png" alt="">
+  <h1 id="title">PawLink</h1>
+  <p id="status">…</p>
+  <p class="muted" id="fallback"></p>
+</main>
+<script>
+// The README buttons point here. GitHub has no "latest file whose name starts with…" link,
+// so this page asks the GitHub API for recent releases and redirects to the newest
+// PawLink-Setup-<version>.exe / Android-PawLink-Setup-<version>.apk it finds.
+(function () {
+  var REPO = 'FelixEnotix/PawLink';
+  var RELEASES = 'https://github.com/' + REPO + '/releases/latest';
+  var ru = /^ru\b/i.test(navigator.language || '');
+  var android = /android/i.test(new URLSearchParams(location.search).get('os') || '');
+  var pattern = android ? /^Android-PawLink-(?:Setup|Sutep)-(\d+(?:\.\d+)*)\.apk$/i : /^PawLink-(?:Setup|Sutep)-(\d+(?:\.\d+)*)\.exe$/i;
+  // Combined release: fixed file name, versions in the tag "W<windows>-A<android>".
+  var fixedName = android ? 'pawlink-android.apk' : 'pawlink-windows-setup.exe';
+  var tagPattern = android ? /(?:^|[^a-z0-9])a(?:ndroid)?-?v?(\d+\.\d+\.\d+)/i : /(?:^|[^a-z0-9])w(?:in(?:dows)?)?-?v?(\d+\.\d+\.\d+)/i;
+  var t = ru
+    ? { wait: 'Ищем последнюю версию для ' + (android ? 'Android' : 'Windows') + '…', start: 'Скачивание PawLink {v} началось.', fail: 'Не удалось найти файл автоматически.', link: 'Открыть страницу релизов' }
+    : { wait: 'Looking for the latest ' + (android ? 'Android' : 'Windows') + ' version…', start: 'Downloading PawLink {v}…', fail: 'Could not find the file automatically.', link: 'Open the releases page' };
+  document.documentElement.lang = ru ? 'ru' : 'en';
+  var status = document.getElementById('status');
+  var fallback = document.getElementById('fallback');
+  status.textContent = t.wait;
+  fallback.innerHTML = '<a href="' + RELEASES + '">' + t.link + '</a>';
+
+  function compare(a, b) {
+    var x = a.split('.').map(Number), y = b.split('.').map(Number);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) {
+      var d = (x[i] || 0) - (y[i] || 0);
+      if (d) return d;
+    }
+    return 0;
+  }
+  function fail() {
+    status.textContent = t.fail;
+    setTimeout(function () { location.replace(RELEASES); }, 2500);
+  }
+  fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=100', { headers: { Accept: 'application/vnd.github+json' } })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (releases) {
+      var best = null;
+      releases.forEach(function (release) {
+        if (release.draft || release.prerelease) return;
+        (release.assets || []).forEach(function (asset) {
+          var m = pattern.exec(asset.name);
+          if (!m && asset.name.toLowerCase() === fixedName) m = tagPattern.exec(release.tag_name || '');
+          if (m && (!best || compare(m[1], best.version) > 0)) best = { version: m[1], url: asset.browser_download_url };
+        });
+      });
+      if (!best || !/^https:\/\/github\.com\//.test(best.url)) return fail();
+      status.textContent = t.start.replace('{v}', best.version);
+      location.replace(best.url);
+    })
+    .catch(fail);
+})();
+</script>
+</body>
+</html>

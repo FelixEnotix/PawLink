@@ -9,8 +9,8 @@
 <h1 align="center">PawLink</h1>
 
 <p align="center">
-  <b>VPN, который просто работает. Даже там, где остальные уже сдались.</b><br/>
-  Для Windows и Android · бесплатно · без рекламы и регистрации
+  <b>Удобный и простой VPN клиент</b><br/>
+  Для Windows и Android
 </p>
 
 <p align="center">

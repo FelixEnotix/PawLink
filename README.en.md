@@ -9,8 +9,8 @@
 <h1 align="center">PawLink</h1>
 
 <p align="center">
-  <b>A VPN app that just works. Even where others give up.</b><br/>
-  For Windows and Android · free · no ads, no sign-up
+  <b>A convenient and simple VPN client</b><br/>
+  For Windows and Android
 </p>
 
 <p align="center">

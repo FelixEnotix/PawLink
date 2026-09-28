@@ -15,6 +15,7 @@ and then by its real IP from the same socket received replies from the fake-ip a
 3. `adapter/adapter.go`: `WithColdOnlyFlag(ctx, *bool)` - URLTest sets the flag when the warm request
    failed and the value is the cold setup time. PawLink's `native/ping` then prefers warm samples
    (a cold value looked like a 500-1000 ms ping). Callers that do not set the flag are unaffected.
+   `MarkColdOnly(ctx)` sets that flag (used by the `native/ping` tests).
 
 4. `hub/route/cache.go`: `POST /cache/dns/flush` also resets pooled DNS connections of all resolvers.
    The Windows backend calls it after the PC wakes up (dead DoH connections made every server with a

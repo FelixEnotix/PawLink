@@ -70,6 +70,10 @@ func measureTargets(ctx context.Context, tester URLTester, wireGuardFallback boo
 		}
 		measure(URLTestTargets[index])
 	}
+
+	if len(delays) == 0 && len(colds) > 0 && ctx.Err() == nil {
+		measure(URLTestTargets[0])
+	}
 	if len(delays) == 0 && len(colds) == 0 && wireGuardFallback && ctx.Err() == nil {
 		measure(WireGuardFallbackTarget)
 	}

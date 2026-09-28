@@ -172,6 +172,13 @@ func WithColdOnlyFlag(ctx context.Context, flag *bool) context.Context {
 	return context.WithValue(ctx, coldOnlyKey{}, flag)
 }
 
+// MarkColdOnly sets the flag of WithColdOnlyFlag (PawLink tests use it to fake a cold result).
+func MarkColdOnly(ctx context.Context) {
+	if flag, ok := ctx.Value(coldOnlyKey{}).(*bool); ok && flag != nil {
+		*flag = true
+	}
+}
+
 func (p *Proxy) URLTest(ctx context.Context, url string, expectedStatus utils.IntRanges[uint16]) (t uint16, err error) {
 	var satisfied bool
 

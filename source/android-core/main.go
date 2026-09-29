@@ -115,6 +115,14 @@ func PawProbe(payload *C.char) (result C.int) {
 			}
 		}
 		parsed, err := adapter.ParseProxy(options)
+
+		if checkOnly, _ := mapping["_pawlink_check_only"].(bool); checkOnly {
+			if err != nil {
+				return -3
+			}
+			parsed.Close()
+			return 0
+		}
 		if err != nil {
 			return -1
 		}

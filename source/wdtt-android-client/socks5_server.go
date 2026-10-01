@@ -35,7 +35,7 @@ const (
 	socksReplyUnsupported = 0x07
 	socksReplyAddressType = 0x08
 	socksMaxUDPDatagram   = 64 * 1024
-	// Steam Datagram Relay (CS2, Dota 2) and other game SDKs ping 100+ relay
+	// PawLink: Steam Datagram Relay (CS2, Dota 2) and other game SDKs ping 100+ relay
 	// endpoints from one UDP socket, so one association carries many targets.
 	// A small LRU cap closed flows before their replies arrived and the game
 	// reported that no relay was reachable over UDP.

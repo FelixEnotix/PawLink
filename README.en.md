@@ -10,7 +10,7 @@
 
 <p align="center">
   <b>A convenient and simple VPN client</b><br/>
-  For Windows and Android
+  For Windows, Android and Android TV
 </p>
 
 <p align="center">
@@ -51,6 +51,12 @@ That's all the setup there is. Servers, updates and reconnects are PawLink's job
 **🎯 Rules without the pain.** Want only YouTube to go through the VPN? Type one word — `youtube` — and PawLink understands it means every YouTube site and video server. You can also paste a link to a site or pick a ready-made rule preset. On a phone, tick the apps you need or tap "Select recommended apps". Everything else, LAN games included, works directly.
 
 **🚫 Fewer ads.** Ad blocking is one switch away.
+
+**📺 On your TV too.** The same PawLink installs on Android TV and TV boxes. TV mode gives big buttons, a side menu and remote control navigation. No typing a subscription with the remote — scan the QR code on the TV screen with your phone or enter 8 digits, and PawLink moves the servers over Wi-Fi.
+
+<p align="center">
+  <img src="assets/screenshots/preview-tv-en.png" alt="PawLink on a TV" width="100%" />
+</p>
 
 ## Who it's for
 
@@ -93,6 +99,12 @@ Some apps (banking ones, for example) dislike VPNs — just keep them out of it.
 <summary><b>What do I need for my own VPN-over-a-call server?</b></summary>
 <br/>
 Any cheap VPS: 1 core, 512 MB of RAM or more, Ubuntu 22.04 or 24.04 and access with a password or key. PawLink installs everything else. The server password is stored encrypted only on your device and never ends up in links you share.
+</details>
+
+<details>
+<summary><b>How do I install PawLink on a TV?</b></summary>
+<br/>
+Download the Android file and install it on your Android TV or TV box (for example, from a USB stick or with a file transfer app). On first launch PawLink offers TV mode — you can also turn it on later in the settings. The easiest way to add servers is from your phone: open "Share over Wi-Fi" on the TV, then on the phone tap "+" → "Share over Wi-Fi" → "Send" and scan the QR code.
 </details>
 
 <details>

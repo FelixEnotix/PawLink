@@ -102,6 +102,12 @@ Any cheap VPS: 1 core, 512 MB of RAM or more, Ubuntu 22.04 or 24.04 and access w
 </details>
 
 <details>
+<summary><b>The PC update is stuck at 0 % (version 2.2.4)</b></summary>
+<br/>
+Version 2.2.4 downloads updates outside the VPN, and with some providers the download from GitHub stalls. Options: on the Home screen switch the mode to "Full VPN" and press "Update" again; or disconnect the VPN and update; or download the installer with the "Download for Windows" button at the top of this page and run it — PawLink updates in place, settings and subscriptions are kept. Starting with 2.2.5 updates go through the VPN, resume after a break and retry by themselves.
+</details>
+
+<details>
 <summary><b>How do I install PawLink on a TV?</b></summary>
 <br/>
 Download the Android file and install it on your Android TV or TV box (for example, from a USB stick or with a file transfer app). On first launch PawLink offers TV mode — you can also turn it on later in the settings. The easiest way to add servers is from your phone: open "Share over Wi-Fi" on the TV, then on the phone tap "+" → "Share over Wi-Fi" → "Send" and scan the QR code.

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
 	neturl "net/url"
@@ -632,7 +631,7 @@ func getTokenChain(ctx context.Context, link string, streamID int, creds VKCrede
 			}
 		}()
 
-		body, err := io.ReadAll(httpResp.Body)
+		body, err := readResponseBounded(httpResp.Body)
 		if err != nil {
 			return nil, err
 		}

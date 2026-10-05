@@ -10,14 +10,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	mathrand "math/rand"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	neturl "net/url"
@@ -51,7 +49,7 @@ var (
 
 	captchaV2MaxAttempts = 2
 
-	captchaV2DebugCache  sync.Map // scriptURL -> string
+	captchaV2DebugCache = newBoundedCache(64) // scriptURL -> string
 	captchaV2HeaderOrder = []string{
 		"host",
 		"content-length",
@@ -1015,7 +1013,7 @@ func (s *captchaV2Session) doRaw(
 			log.Printf("[КАПЧА] v2 close body: %s", closeErr)
 		}
 	}()
-	return io.ReadAll(resp.Body)
+	return readResponseBounded(resp.Body)
 }
 
 func captchaV2EncodeForm(values [][2]string) string {

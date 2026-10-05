@@ -146,7 +146,7 @@ func PawProbe(payload *C.char) (result C.int) {
 	}
 	proxyType, _ := mapping["type"].(string)
 	wireGuard := strings.Contains(strings.ToLower(proxyType), "wireguard")
-	totalTimeout := time.Duration(samples)*timeoutPerSample + 2*time.Second
+	totalTimeout := time.Duration(len(ping.URLTestTargets)+1)*timeoutPerSample + 2*time.Second
 	if wireGuard {
 		totalTimeout += timeoutPerSample
 	}

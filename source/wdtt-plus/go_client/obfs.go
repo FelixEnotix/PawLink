@@ -22,7 +22,7 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
-var aeadCache sync.Map
+var aeadCache = newBoundedCache(256)
 
 func getAEAD(key []byte) (cipher.AEAD, error) {
 	if len(key) != wrapKeyLen {

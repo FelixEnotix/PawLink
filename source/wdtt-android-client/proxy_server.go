@@ -10,7 +10,6 @@ import (
 	"net/netip"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -35,7 +34,7 @@ func (err *proxyListenError) Unwrap() error {
 }
 
 func proxyPortInUseAddress(err error) (string, bool) {
-	if !errors.Is(err, syscall.EADDRINUSE) {
+	if !isAddressInUse(err) {
 		return "", false
 	}
 	var listenErr *proxyListenError

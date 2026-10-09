@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/metacubex/mihomo/component/ca"
+	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	"github.com/metacubex/mihomo/transport/jls"
@@ -49,6 +50,17 @@ func (cfg *TLSConfig) ToStdConfig() (*tls.Config, error) {
 }
 
 func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
+	tlsConn, err := streamTLSConn(ctx, conn, cfg)
+	// PawLink: tell the dialer whether this address of the server answered after the TCP
+	// connection (component/dialer/handshake_health.go). The wrapped transports below may
+	// postpone their handshake, so for them only a failure is reported.
+	if err != nil || (cfg.ShadowTLS == nil && cfg.Restls == nil && cfg.JLS == nil && cfg.TLSMirror == nil) {
+		dialer.ReportHandshake(ctx, conn, err)
+	}
+	return tlsConn, err
+}
+
+func streamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
 	if cfg.ShadowTLS != nil {
 		alpn := cfg.NextProtos
 		if alpn == nil {

@@ -18,6 +18,7 @@ import (
 
 	"github.com/metacubex/mihomo/common/buf"
 	N "github.com/metacubex/mihomo/common/net"
+	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	"github.com/metacubex/mihomo/log"
@@ -373,6 +374,7 @@ func streamWebsocketConn(ctx context.Context, conn net.Conn, c *WebsocketConfig,
 				return nil, fmt.Errorf("parse url %s error: %w", c.Path, err)
 			}
 			err = tlsConn.HandshakeContext(ctx)
+			dialer.ReportHandshake(ctx, conn, err) // PawLink: see component/dialer/handshake_health.go
 			if err != nil {
 				return nil, err
 			}
@@ -384,6 +386,7 @@ func streamWebsocketConn(ctx context.Context, conn net.Conn, c *WebsocketConfig,
 			}
 			tlsConn := tls.Client(conn, config)
 			err = tlsConn.HandshakeContext(ctx)
+			dialer.ReportHandshake(ctx, conn, err) // PawLink
 			if err != nil {
 				return nil, err
 			}

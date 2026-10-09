@@ -12,6 +12,7 @@ themselves are not open source (see `../LICENSE`).
 | `android-core` | `libpawcore.so`: the JNI bridge linked with mihomo | GPL-3.0 |
 | `wdtt-plus` | WDTT-Plus: Windows client (`go_client`) and server | GPL-3.0 |
 | `wdtt-android-client`, `wdtt-android-server` | WDTT client for Android (`libwdtt.so`) and the server binary installed by the app | GPL-3.0 |
+| `wireguard` (and `wdtt-plus/third_party/wireguard`) | wireguard-go used by the WDTT clients; patched `tai64n`: the handshake time follows the real time when the device clock is behind | MIT |
 
 ## Building
 

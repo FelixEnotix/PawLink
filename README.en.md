@@ -92,7 +92,7 @@ On first launch PawLink shows what to change: turn off battery optimisation for 
 <details>
 <summary><b>Some app doesn't work while the VPN is on</b></summary>
 <br/>
-Some apps (banking ones, for example) dislike VPNs — just keep them out of it. On the phone open the Rules tab and choose "Only selected apps use VPN": only the apps you tick go through the VPN, everything else works as usual. Some apps notice that a VPN is on even when their own traffic goes direct. For them Settings has "Hide VPN from apps": no system VPN is created, and only apps with a proxy set go through PawLink.
+Some apps (banking ones, for example) dislike VPNs — just keep them out of it. On the phone open the Rules tab and choose "Only selected apps use VPN": only the apps you tick go through the VPN, everything else works as usual. Android lets apps detect that a system VPN is active even when their own traffic goes direct. Split routing does not change this.
 </details>
 
 <details>

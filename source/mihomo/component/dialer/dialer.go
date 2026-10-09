@@ -54,6 +54,10 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 	if err != nil {
 		return nil, err
 	}
+	if strings.HasPrefix(network, "tcp") {
+		// PawLink: leave out addresses that accept the connection and then stay silent.
+		ips = answeringAddrs(ips, port)
+	}
 
 	tcpConcurrent := GetTcpConcurrent()
 

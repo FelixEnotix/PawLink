@@ -205,6 +205,7 @@ func getVKCredsViaVKCalls(ctx context.Context, link string, streamID int) (strin
 			return nil, fmt.Errorf("%s request: %w", step, err)
 		}
 		defer resp.Body.Close()
+		noteServerDate(resp.Header.Get("Date"))
 		body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 		if err != nil {
 			return nil, fmt.Errorf("%s read response: %w", step, err)

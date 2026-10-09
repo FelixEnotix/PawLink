@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/component/profile/cachefile"
@@ -125,6 +126,11 @@ func getProxyDelay(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(timeout))
 	defer cancel()
 
+	// PawLink: "cold" tells the caller that the timed (second) request failed and the value is
+	// the whole connection setup, several round trips, not the latency (adapter.WithColdOnlyFlag).
+	coldOnly := false
+	ctx = adapter.WithColdOnlyFlag(ctx, &coldOnly)
+
 	delay, err := proxy.URLTest(ctx, url, expectedStatus)
 	if ctx.Err() != nil {
 		render.Status(r, http.StatusGatewayTimeout)
@@ -144,6 +150,7 @@ func getProxyDelay(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, render.M{
 		"delay": delay,
+		"cold":  coldOnly,
 	})
 }
 

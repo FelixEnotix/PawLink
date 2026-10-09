@@ -85,6 +85,8 @@ func ApplyConfig(cfg *config.Config, force bool) {
 	mux.Lock()
 	defer mux.Unlock()
 	log.SetLevel(cfg.General.LogLevel)
+	// PawLink: server addresses that accept a connection and stay silent (component/dialer/handshake_health.go).
+	dialer.UseSilentAddressFile(C.Path.Resolve("silent-addresses.json"))
 
 	tunnel.OnSuspend()
 

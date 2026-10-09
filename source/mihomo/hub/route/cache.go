@@ -1,6 +1,7 @@
 package route
 
 import (
+	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/resolver"
 
 	"github.com/metacubex/chi"
@@ -12,7 +13,19 @@ func cacheRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/fakeip/flush", flushFakeIPPool)
 	r.Post("/dns/flush", flushDnsCache)
+	// PawLink: server addresses the dialer skips because they accept a connection and stay silent.
+	r.Get("/silent-addresses", listSilentAddresses)
+	r.Post("/silent-addresses/flush", flushSilentAddresses)
 	return r
+}
+
+func listSilentAddresses(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, r, render.M{"addresses": dialer.SilentAddresses()})
+}
+
+func flushSilentAddresses(w http.ResponseWriter, r *http.Request) {
+	dialer.ResetSilentAddresses()
+	render.NoContent(w, r)
 }
 
 func flushFakeIPPool(w http.ResponseWriter, r *http.Request) {

@@ -1,6 +1,6 @@
 # mihomo v1.19.30 (PawLink patch)
 
-Copy of `github.com/metacubex/mihomo@v1.19.30` with four changes.
+Copy of `github.com/metacubex/mihomo@v1.19.30` with six changes.
 
 1. `tunnel/connection.go`:
 UDP destination-NAT restore uses the destination the application sent to most recently
@@ -20,5 +20,20 @@ and then by its real IP from the same socket received replies from the fake-ip a
 4. `hub/route/cache.go`: `POST /cache/dns/flush` also resets pooled DNS connections of all resolvers.
    The Windows backend calls it after the PC wakes up (dead DoH connections made every server with a
    domain name "unreachable" and auto-select jumped to a server reachable by IP).
+
+5. `component/dialer/handshake_health.go` (+ test), `component/dialer/dialer.go`, `transport/vmess/tls.go`,
+   `transport/vmess/websocket.go`, `hub/executor/executor.go`, `hub/route/cache.go`: server addresses that
+   accept a TCP connection but never answer the handshake are skipped. A provider publishes several A records
+   per server and a part of them is filtered on the way (SYN answered, ClientHello dropped); the dialer picked
+   such an address by the TCP connection alone, so 28-46 % of new connections waited 5 s and failed
+   (`tcp-concurrent`; 4 % in bursts without it). `vmess.StreamTLSConn` and the websocket TLS path report the
+   handshake result (`dialer.ReportHandshake`); two silent handshakes in a row set an address aside for
+   10 min / 30 min / 90 min / 4 h while the name has another address; a completed handshake clears it; when
+   every address is set aside all are used. The list is saved in `silent-addresses.json` next to the config.
+   Controller: `GET /cache/silent-addresses`, `POST /cache/silent-addresses/flush`.
+
+6. `hub/route/proxies.go`: `GET /proxies/{name}/delay` also returns `"cold": true` when the timed request
+   failed and the value is the connection setup time (change 3). The Windows backend keeps such values out of
+   the ping unless nothing else was measured (`health/latency_probe.py`), like `native/ping` on Android.
 
 Used by the Android core (`native/go.mod` replace) and by `scripts/build-mihomo.ps1` for Windows.

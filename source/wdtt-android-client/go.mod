@@ -44,3 +44,6 @@ require (
 )
 
 replace wdtt.local/pathprobe => ../pathprobe
+
+// PawLink: handshake timestamps follow the real time when the device clock is behind (third_party/wireguard/tai64n).
+replace golang.zx2c4.com/wireguard => ../wireguard

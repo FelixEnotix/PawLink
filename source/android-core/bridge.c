@@ -6,6 +6,7 @@ extern void PawResetNetwork(void);
 extern void PawSetSystemDNS(char*);
 extern char* PawStats(void);
 extern int PawProbe(char*);
+extern char* PawSwitch(char*);
 extern char* PawDiagnostics(void);
 extern char* PawDumpStacks(char*);
 JNIEXPORT jstring JNICALL Java_com_pawlink_android_NativeCore_start(JNIEnv* env, jobject self, jstring home, jstring config) {
@@ -49,5 +50,13 @@ JNIEXPORT jstring JNICALL Java_com_pawlink_android_NativeCore_dumpStacks(JNIEnv*
  (*env)->ReleaseStringUTFChars(env,path,p);
  jstring result=(*env)->NewStringUTF(env,value);
  free(value);
+ return result;
+}
+JNIEXPORT jstring JNICALL Java_com_pawlink_android_NativeCore_switchProxy(JNIEnv* env, jobject self, jstring json) {
+ const char* text=(*env)->GetStringUTFChars(env,json,0);
+ char* error=PawSwitch((char*)text);
+ (*env)->ReleaseStringUTFChars(env,json,text);
+ jstring result=(*env)->NewStringUTF(env,error);
+ free(error);
  return result;
 }

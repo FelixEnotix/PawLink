@@ -625,6 +625,7 @@ func getTokenChain(ctx context.Context, link string, streamID int, creds VKCrede
 		if err != nil {
 			return nil, fmt.Errorf("VK HTTPS %s: %w", domain, err)
 		}
+		noteServerDate(httpResp.Header.Get("Date"))
 		defer func() {
 			if closeErr := httpResp.Body.Close(); closeErr != nil {
 				log.Printf("close response body: %s", closeErr)

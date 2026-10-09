@@ -157,6 +157,59 @@ func PawProbe(payload *C.char) (result C.int) {
 	return C.int(ping.MeasureSamples(ctx, proxy, wireGuard, samples, fast))
 }
 
+//export PawSwitch
+func PawSwitch(payload *C.char) (result *C.char) {
+
+	coreMutex.Lock()
+	defer coreMutex.Unlock()
+	defer func() {
+		if r := recover(); r != nil {
+			result = C.CString(fmt.Sprint(r))
+		}
+	}()
+	var mapping map[string]any
+	if err := json.Unmarshal([]byte(C.GoString(payload)), &mapping); err != nil {
+		return C.CString(err.Error())
+	}
+	options := make(map[string]any, len(mapping))
+	for key, value := range mapping {
+		if !strings.HasPrefix(key, "_") {
+			options[key] = value
+		}
+	}
+	options["name"] = "PawLink"
+	proxies := tunnel.Proxies()
+	old, ok := proxies["PawLink"]
+	if !ok {
+		return C.CString("the core has no server to replace")
+	}
+	switch old.Type() {
+	case MC.Selector, MC.Fallback, MC.URLTest, MC.LoadBalance, MC.Relay:
+		return C.CString("the server in use is a group")
+	}
+	parsed, err := adapter.ParseProxy(options)
+	if err != nil {
+		return C.CString(err.Error())
+	}
+	updated := make(map[string]MC.Proxy, len(proxies))
+	for name, proxy := range proxies {
+		updated[name] = proxy
+	}
+	updated["PawLink"] = parsed
+	tunnel.UpdateProxies(updated, tunnel.Providers())
+	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
+		for _, name := range c.Chains() {
+			if name == "PawLink" {
+				_ = c.Close()
+				break
+			}
+		}
+		return true
+	})
+	go func() { _ = old.Close() }()
+	return C.CString("")
+}
+
 //export PawResetNetwork
 func PawResetNetwork() {
 

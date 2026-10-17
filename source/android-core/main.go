@@ -241,7 +241,42 @@ func PawSetSystemDNS(list *C.char) {
 func PawStats() *C.char {
 	up, down := statistic.DefaultManager.Now()
 	sent, received := statistic.DefaultManager.Total()
-	return C.CString(fmt.Sprintf("%d,%d,%d,%d", up, down, sent, received))
+	return C.CString(fmt.Sprintf("%d,%d,%d,%d,%d", up, down, sent, received, proxyReceived()))
+}
+
+var proxyRx struct {
+	sync.Mutex
+	last  map[string]int64
+	total int64
+}
+
+func proxyReceived() int64 {
+	proxyRx.Lock()
+	defer proxyRx.Unlock()
+	seen := make(map[string]int64, len(proxyRx.last))
+	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
+		info := c.Info()
+		via := false
+		for _, name := range info.Chain {
+			if name == "PawLink" {
+				via = true
+				break
+			}
+		}
+		if !via {
+			return true
+		}
+		id, now := c.ID(), info.DownloadTotal.Load()
+		if before, ok := proxyRx.last[id]; !ok {
+			proxyRx.total += now
+		} else if now > before {
+			proxyRx.total += now - before
+		}
+		seen[id] = now
+		return true
+	})
+	proxyRx.last = seen
+	return proxyRx.total
 }
 
 //export PawDiagnostics

@@ -1,6 +1,6 @@
 # mihomo v1.19.30 (PawLink patch)
 
-Copy of `github.com/metacubex/mihomo@v1.19.30` with six changes.
+Copy of `github.com/metacubex/mihomo@v1.19.30` with seven changes.
 
 1. `tunnel/connection.go`:
 UDP destination-NAT restore uses the destination the application sent to most recently
@@ -35,5 +35,16 @@ and then by its real IP from the same socket received replies from the fake-ip a
 6. `hub/route/proxies.go`: `GET /proxies/{name}/delay` also returns `"cold": true` when the timed request
    failed and the value is the connection setup time (change 3). The Windows backend keeps such values out of
    the ping unless nothing else was measured (`health/latency_probe.py`), like `native/ping` on Android.
+
+7. `adapter/outbound/wireguard_pawlink.go` (+ test; hooks in `wireguard.go` marked `PawLink`): WireGuard /
+   AmneziaWG stall guard. The sing-wireguard client bind keeps one UDP socket (source port) for its whole life.
+   On networks with DPI one flow can be dropped for good while a flow from another port passes (WARP with
+   AmneziaWG I1: a "dead" port stayed unanswered for 284 s, new ports connected in ~70 % of tries), so the tunnel
+   stayed "connected" with no traffic until reconnect. Every 5 s the guard reads the device counters (`IpcGet`);
+   when more than keepalives was sent, nothing was received for 20 s and there was no handshake for 20 s, it
+   expires the current keys and re-opens the bind (`BindUpdate`, new source port); the next packet the user sends
+   starts a handshake, so the new flow begins with the AmneziaWG I1-I5/junk packets and the handshake, like a fresh
+   connection. The guard starts no handshake itself (a dead server nobody uses is not knocked at forever: rotations
+   stop when WireGuard gives up its retries). Cooldown 15 s. A working or idle tunnel is never touched.
 
 Used by the Android core (`native/go.mod` replace) and by `scripts/build-mihomo.ps1` for Windows.

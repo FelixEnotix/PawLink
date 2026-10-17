@@ -84,6 +84,10 @@ func measureTargets(ctx context.Context, tester URLTester, wireGuardFallback boo
 	if len(delays) == 0 && len(colds) == 0 && wireGuardFallback && ctx.Err() == nil {
 		measure(WireGuardFallbackTarget)
 	}
+
+	if len(delays) == 0 && len(colds) >= 2 && samples >= 2 && !wireGuardFallback {
+		return -1
+	}
 	if len(delays) == 0 {
 		delays = colds
 	}

@@ -45,6 +45,8 @@ const (
 type wireguardGoDevice interface {
 	Close()
 	IpcSet(uapiConf string) error
+	IpcGet() (string, error) // PawLink: stall guard (wireguard_pawlink.go)
+	BindUpdate() error       // PawLink: stall guard (wireguard_pawlink.go)
 }
 
 type WireGuard struct {
@@ -64,6 +66,8 @@ type WireGuard struct {
 	serverAddrMap   map[M.Socksaddr]netip.AddrPort
 	serverAddrTime  atomic.TypedValue[time.Time]
 	serverAddrMutex sync.Mutex
+
+	stallGuard *wgStallGuard // PawLink: wireguard_pawlink.go
 }
 
 type WireGuardOption struct {
@@ -572,6 +576,7 @@ func (w *WireGuard) init0(ctx context.Context) error {
 	}
 
 	w.initOk.Store(true)
+	w.startStallGuard() // PawLink
 	return nil
 }
 
@@ -773,6 +778,7 @@ func (w *WireGuard) genIpcConf(ctx context.Context, updateOnly bool) (string, er
 
 // Close implements C.ProxyAdapter
 func (w *WireGuard) Close() error {
+	w.stopStallGuard() // PawLink
 	if w.device != nil {
 		w.device.Close()
 	}

@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <stdlib.h>
+#include <string.h>
 extern char* PawStart(char*, char*);
 extern void PawStop(void);
 extern void PawResetNetwork(void);
@@ -59,4 +60,41 @@ JNIEXPORT jstring JNICALL Java_com_pawlink_android_NativeCore_switchProxy(JNIEnv
  jstring result=(*env)->NewStringUTF(env,error);
  free(error);
  return result;
+}
+
+
+static JavaVM* paw_vm=NULL;
+static jclass paw_core_class=NULL;
+static jmethodID paw_owner_method=NULL;
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {paw_vm=vm;return JNI_VERSION_1_6;}
+JNIEXPORT void JNICALL Java_com_pawlink_android_NativeCore_initOwner(JNIEnv* env, jobject self) {
+ if(paw_owner_method)return;
+ jclass local=(*env)->FindClass(env,"com/pawlink/android/NativeCore");
+ if(!local){(*env)->ExceptionClear(env);return;}
+ paw_core_class=(jclass)(*env)->NewGlobalRef(env,local);
+ (*env)->DeleteLocalRef(env,local);
+ paw_owner_method=(*env)->GetStaticMethodID(env,paw_core_class,"ownerPackage","(ILjava/lang/String;ILjava/lang/String;I)Ljava/lang/String;");
+ if(!paw_owner_method)(*env)->ExceptionClear(env);
+}
+char* pawOwnerPackage(int protocol, char* source, int sourcePort, char* destination, int destinationPort) {
+ if(!paw_vm||!paw_core_class||!paw_owner_method)return NULL;
+ JNIEnv* env=NULL;int attached=0;
+ if((*paw_vm)->GetEnv(paw_vm,(void**)&env,JNI_VERSION_1_6)!=JNI_OK){
+  if((*paw_vm)->AttachCurrentThread(paw_vm,&env,NULL)!=JNI_OK)return NULL;
+  attached=1;
+ }
+ char* out=NULL;
+ jstring src=(*env)->NewStringUTF(env,source);
+ jstring dst=(*env)->NewStringUTF(env,destination);
+ jstring name=(jstring)(*env)->CallStaticObjectMethod(env,paw_core_class,paw_owner_method,(jint)protocol,src,(jint)sourcePort,dst,(jint)destinationPort);
+ if((*env)->ExceptionCheck(env)){(*env)->ExceptionClear(env);}
+ else if(name){
+  const char* chars=(*env)->GetStringUTFChars(env,name,0);
+  if(chars){out=strdup(chars);(*env)->ReleaseStringUTFChars(env,name,chars);}
+  (*env)->DeleteLocalRef(env,name);
+ }
+ if(src)(*env)->DeleteLocalRef(env,src);
+ if(dst)(*env)->DeleteLocalRef(env,dst);
+ if(attached)(*paw_vm)->DetachCurrentThread(paw_vm);
+ return out;
 }

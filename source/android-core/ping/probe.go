@@ -71,11 +71,35 @@ func measureTargets(ctx context.Context, tester URLTester, wireGuardFallback boo
 		measure(URLTestTargets[index])
 	}
 
-	if len(delays) == 0 && len(colds) == 0 && !wireGuardFallback {
-		for index := samples; index < len(URLTestTargets) && ctx.Err() == nil; index++ {
-			measure(URLTestTargets[index])
-			if len(delays) > 0 || len(colds) > 0 { break }
+	if len(delays) == 0 && len(colds) == 0 && !wireGuardFallback && samples < len(URLTestTargets) && ctx.Err() == nil {
+		type answer struct {
+			delay int
+			cold  bool
+			ok    bool
 		}
+		rest := URLTestTargets[samples:]
+		altCtx, stop := context.WithCancel(ctx)
+		answers := make(chan answer, len(rest))
+		for _, target := range rest {
+			go func(target string) {
+				cold := false
+				probeCtx, cancel := context.WithTimeout(adapter.WithColdOnlyFlag(altCtx, &cold), timeout)
+				delay, err := tester.URLTest(probeCtx, target, nil)
+				cancel()
+				answers <- answer{int(delay), cold, err == nil && usableDelay(int(delay), timeout)}
+			}(target)
+		}
+		for range rest {
+			if a := <-answers; a.ok {
+				if a.cold {
+					colds = append(colds, a.delay)
+				} else {
+					delays = append(delays, a.delay)
+				}
+				break
+			}
+		}
+		stop()
 	}
 
 	if len(delays) == 0 && len(colds) > 0 && ctx.Err() == nil {

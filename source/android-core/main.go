@@ -2,6 +2,7 @@ package main
 
 /*
 #include <stdlib.h>
+extern char* pawOwnerPackage(int protocol, char* source, int sourcePort, char* destination, int destinationPort);
 */
 import "C"
 import (
@@ -9,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/metacubex/mihomo/adapter"
+	"github.com/metacubex/mihomo/component/process"
 	"github.com/metacubex/mihomo/component/resolver"
 	_ "github.com/metacubex/mihomo/component/geodata/memconservative"
 	_ "github.com/metacubex/mihomo/component/geodata/standard"
@@ -19,7 +21,9 @@ import (
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
+	"errors"
 	"net"
+	"net/netip"
 	"os"
 	"pawlink/androidcore/ping"
 	"runtime"
@@ -28,6 +32,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"unsafe"
 )
 
 var coreMutex sync.Mutex
@@ -322,4 +327,51 @@ func PawDumpStacks(path *C.char) *C.char {
 	}
 	return C.CString("")
 }
+var errNoOwner = errors.New("connection owner unknown")
+
+func ownerPackage(metadata *MC.Metadata) (string, error) {
+	if metadata == nil || !metadata.SrcIP.IsValid() {
+		return "", errNoOwner
+	}
+	protocol := 6
+	if metadata.NetWork == MC.UDP {
+		protocol = 17
+	}
+
+	dstIP, dstPort := metadata.InIP, int(metadata.InPort)
+	if tcp, ok := metadata.RawDstAddr.(*net.TCPAddr); ok && tcp != nil {
+		if addr, ok := netip.AddrFromSlice(tcp.IP); ok {
+			dstIP, dstPort = addr.Unmap(), tcp.Port
+		}
+	} else if udp, ok := metadata.RawDstAddr.(*net.UDPAddr); ok && udp != nil {
+		if addr, ok := netip.AddrFromSlice(udp.IP); ok {
+			dstIP, dstPort = addr.Unmap(), udp.Port
+		}
+	}
+	if !dstIP.IsValid() {
+		dstIP, dstPort = metadata.DstIP, int(metadata.DstPort)
+	}
+	if !dstIP.IsValid() {
+		return "", errNoOwner
+	}
+	source := C.CString(metadata.SrcIP.Unmap().String())
+	defer C.free(unsafe.Pointer(source))
+	destination := C.CString(dstIP.Unmap().String())
+	defer C.free(unsafe.Pointer(destination))
+	result := C.pawOwnerPackage(C.int(protocol), source, C.int(metadata.SrcPort), destination, C.int(dstPort))
+	if result == nil {
+		return "", errNoOwner
+	}
+	defer C.free(unsafe.Pointer(result))
+	name := C.GoString(result)
+	if name == "" {
+		return "", errNoOwner
+	}
+	return name, nil
+}
+
+func init() {
+	process.DefaultPackageNameResolver = ownerPackage
+}
+
 func main() {}

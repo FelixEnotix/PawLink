@@ -24,6 +24,35 @@ var URLTestTargets = []string{
 
 const WireGuardFallbackTarget = "https://cp.cloudflare.com/"
 
+func MeasureQuick(parent context.Context, tester URLTester, budget time.Duration) int {
+	ctx, cancel := context.WithTimeout(parent, budget)
+	defer cancel()
+	targets := []string{"https://www.gstatic.com/generate_204", "https://cp.cloudflare.com/generate_204"}
+	answers := make(chan int, len(targets))
+	for _, target := range targets {
+		go func(target string) {
+			cold := false
+			delay, err := tester.URLTest(adapter.WithColdOnlyFlag(ctx, &cold), target, nil)
+			value := -1
+			if err == nil && !cold && int(delay) >= MinUsefulDelayMS && int(delay) < int(budget/time.Millisecond) {
+				value = int(delay)
+			}
+			answers <- value
+		}(target)
+	}
+	for range targets {
+		select {
+		case value := <-answers:
+			if value >= 0 {
+				return value
+			}
+		case <-ctx.Done():
+			return -1
+		}
+	}
+	return -1
+}
+
 type URLTester interface {
 	URLTest(context.Context, string, utils.IntRanges[uint16]) (uint16, error)
 }

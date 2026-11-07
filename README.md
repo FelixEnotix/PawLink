@@ -14,8 +14,8 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/latest/download/PawLink-Windows-Setup.exe"><img src="https://img.shields.io/badge/Windows%20EXE-0078D4?style=for-the-badge" alt="Скачать для Windows" /></a>
-  <a href="../../releases/latest/download/PawLink-Android.apk"><img src="https://img.shields.io/badge/Android%20APK-237A43?style=for-the-badge" alt="Скачать APK для Android и Android TV" /></a>
+  <a href="../../releases/latest/download/PawLink-Windows-Setup.exe"><img src="assets/download-windows-ru.svg" alt="Скачать для Windows" width="330" height="64" /></a>
+  <a href="../../releases/latest/download/PawLink-Android.apk"><img src="assets/download-android-ru.svg" alt="Скачать для Android" width="330" height="64" /></a>
   <br />
   <sub>Один APK для Android и Android TV · <a href="../../releases">Все релизы</a></sub>
 </p>

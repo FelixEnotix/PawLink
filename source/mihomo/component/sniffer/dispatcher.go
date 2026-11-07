@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"net/netip"
+	"strings"
 	"time"
 
 	"github.com/metacubex/sing/common/metadata"
 
-	"github.com/metacubex/mihomo/common/lru"
 	N "github.com/metacubex/mihomo/common/net"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/constant/sniffer"
@@ -33,7 +33,6 @@ type Dispatcher struct {
 	skipSrcAddress  []C.IpMatcher
 	skipDstAddress  []C.IpMatcher
 	skipDomain      []C.DomainMatcher
-	skipList        *lru.LruCache[netip.AddrPort, uint8]
 	forceDnsMapping bool
 	parsePureIp     bool
 }
@@ -134,21 +133,10 @@ func (sd *Dispatcher) TCPSniff(conn *N.BufferedConn, metadata *C.Metadata) bool 
 		if !inWhitelist {
 			return false
 		}
-		forceSniffer := sd.forceSniff(metadata)
-
-		dst := metadata.AddrPort()
-		if !forceSniffer {
-			if count, ok := sd.skipList.Get(dst); ok && count > 5 {
-				log.Debugln("[Sniffer] Skip sniffing[%s] due to multiple failures", dst)
-				return false
-			}
-		}
-
+		// A shared IP can serve many domains. Failures on an earlier connection
+		// must not suppress domain recovery and change routing for the next one.
 		host, config, err := sd.sniffDomain(conn, metadata)
 		if err != nil {
-			if !forceSniffer {
-				sd.cacheSniffFailed(metadata)
-			}
 			log.Debugln("[Sniffer] All sniffing sniff failed with from [%s:%d] to [%s:%d]", metadata.SrcIP, metadata.SrcPort, metadata.String(), metadata.DstPort)
 			return false
 		}
@@ -158,8 +146,6 @@ func (sd *Dispatcher) TCPSniff(conn *N.BufferedConn, metadata *C.Metadata) bool 
 			return false
 		}
 
-		sd.skipList.Delete(dst)
-
 		replaceDomain(metadata, host, config.OverrideDest)
 		return true
 	}
@@ -167,6 +153,7 @@ func (sd *Dispatcher) TCPSniff(conn *N.BufferedConn, metadata *C.Metadata) bool 
 }
 
 func replaceDomain(metadata *C.Metadata, host string, overrideDest bool) {
+	host = strings.ToLower(host)
 	metadata.SniffHost = host
 	if overrideDest {
 		log.Debugln("[Sniffer] Sniff %s [%s]-->[%s] success, replace domain [%s]-->[%s]",
@@ -227,7 +214,7 @@ func (sd *Dispatcher) sniffDomain(conn *N.BufferedConn, metadata *C.Metadata) (s
 	_, err := conn.Peek(1)
 	_ = conn.SetReadDeadline(time.Time{})
 	if err != nil {
-		// The caller owns failure accounting and the connection lifetime. No
+		// The caller owns the connection lifetime. No
 		// initial data can be valid for a server-first protocol, so sniffing must
 		// not close the connection merely because this deadline expired.
 		log.Debugln("[Sniffer] [%s] the data length not enough, error: %v", metadata.DstIP, err)
@@ -298,16 +285,6 @@ func (sd *Dispatcher) sniffDomain(conn *N.BufferedConn, metadata *C.Metadata) (s
 	return "", SnifferConfig{}, ErrorSniffFailed
 }
 
-func (sd *Dispatcher) cacheSniffFailed(metadata *C.Metadata) {
-	dst := metadata.AddrPort()
-	sd.skipList.Compute(dst, func(oldValue uint8, loaded bool) (newValue uint8, delete bool) {
-		if oldValue <= 5 {
-			oldValue++
-		}
-		return oldValue, false
-	})
-}
-
 type Config struct {
 	Enable          bool
 	Sniffers        map[sniffer.Type]SnifferConfig
@@ -326,7 +303,6 @@ func NewDispatcher(snifferConfig *Config) (*Dispatcher, error) {
 		skipSrcAddress:  snifferConfig.SkipSrcAddress,
 		skipDstAddress:  snifferConfig.SkipDstAddress,
 		skipDomain:      snifferConfig.SkipDomain,
-		skipList:        lru.New(lru.WithSize[netip.AddrPort, uint8](128), lru.WithAge[netip.AddrPort, uint8](600)),
 		forceDnsMapping: snifferConfig.ForceDnsMapping,
 		parsePureIp:     snifferConfig.ParsePureIp,
 		sniffers:        make([]configuredSniffer, 0, len(snifferConfig.Sniffers)),

@@ -8,20 +8,20 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/metacubex/mihomo/adapter"
-	"github.com/metacubex/mihomo/component/process"
-	"github.com/metacubex/mihomo/component/resolver"
 	_ "github.com/metacubex/mihomo/component/geodata/memconservative"
 	_ "github.com/metacubex/mihomo/component/geodata/standard"
+	"github.com/metacubex/mihomo/component/process"
+	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/config"
-	mihomodns "github.com/metacubex/mihomo/dns"
 	MC "github.com/metacubex/mihomo/constant"
+	mihomodns "github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/hub/executor"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
-	"errors"
 	"net"
 	"net/netip"
 	"os"
@@ -145,6 +145,10 @@ func PawProbe(payload *C.char) (result C.int) {
 		samples = len(ping.URLTestTargets)
 	}
 	fast, _ := mapping["_pawlink_probe_fast"].(bool)
+	if quick, _ := mapping["_pawlink_probe_quick"].(bool); quick {
+		adapter.UnifiedDelay.Store(true)
+		return C.int(ping.MeasureQuick(context.Background(), proxy, 2200*time.Millisecond))
+	}
 	timeoutPerSample := ping.ProbeTimeout
 	if fast {
 		timeoutPerSample = ping.ProbeFastTimeout
@@ -327,6 +331,7 @@ func PawDumpStacks(path *C.char) *C.char {
 	}
 	return C.CString("")
 }
+
 var errNoOwner = errors.New("connection owner unknown")
 
 func ownerPackage(metadata *MC.Metadata) (string, error) {

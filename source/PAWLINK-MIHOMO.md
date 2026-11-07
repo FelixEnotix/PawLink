@@ -1,6 +1,6 @@
 # mihomo v1.19.30 (PawLink patch)
 
-Copy of `github.com/metacubex/mihomo@v1.19.30` with seven changes.
+Copy of `github.com/metacubex/mihomo@v1.19.30` with eight changes.
 
 1. `tunnel/connection.go`:
 UDP destination-NAT restore uses the destination the application sent to most recently
@@ -47,4 +47,13 @@ and then by its real IP from the same socket received replies from the fake-ip a
    connection. The guard starts no handshake itself (a dead server nobody uses is not knocked at forever: rotations
    stop when WireGuard gives up its retries). Cooldown 15 s. A working or idle tunnel is never touched.
 
+8. `component/sniffer/dispatcher.go`: failed TCP sniffing no longer disables inspection of the
+   entire destination IP:port for ten minutes. Different connections and virtual hosts sharing an
+   IP can carry valid TLS after earlier failures; skipping them lost a `.ru` DIRECT exception and
+   selected the browser's PROXY rule instead. Recovered names are normalized to lowercase for DNS
+   matching without replacing the actual TLS/QUIC peer IP. Regression:
+   `TestTCPDomainRecoveryAfterFailures` (valid TLS after eight failures, including uppercase SNI).
+
 Used by the Android core (`native/go.mod` replace) and by `scripts/build-mihomo.ps1` for Windows.
+Windows bundling verifies a SHA-256 manifest of the sources, build scripts and executable;
+preserved file timestamps can no longer silently retain an outdated binary.
